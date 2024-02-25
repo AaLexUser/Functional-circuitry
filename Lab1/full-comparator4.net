@@ -1,0 +1,69 @@
+* Y:\Functional circuitry\Lab1\full-comparator4.asc
+R1 L 0 100k
+C1 L 0 100f
+R2 E 0 100k
+C2 E 0 100f
+R3 G 0 100k
+C3 G 0 100f
+V3 VDD 0 1
+V5 FE 0 1
+XX1 A3 B3 N001 N002 N003 VDD L E G full-comparator-sequential
+XX2 A2 B2 N004 N005 N006 VDD N001 N002 N003 full-comparator-sequential
+XX3 A1 B1 N007 N008 N009 VDD N004 N005 N006 full-comparator-sequential
+XX4 A0 B0 0 FE 0 VDD N007 N008 N009 full-comparator-sequential
+V4 A0 0 PULSE(0 1 1n 10p 10p 2n 4n)
+V6 B0 0 PULSE(0 1 1n 10p 10p 4n 8n)
+V7 A1 0 PULSE(0 1 1n 10p 10p 8n 16n)
+V8 B1 0 PULSE(0 1 1n 10p 10p 16n 32n)
+V9 A2 0 PULSE(0 1 1n 10p 10p 32n 64n)
+V10 B2 0 PULSE(0 1 1n 10p 10p 64n 128n)
+V11 A3 0 PULSE(0 1 1n 10p 10p 128n 256n)
+V12 B3 0 PULSE(0 1 1n 10p 10p 256n 512n)
+
+* block symbol definitions
+.subckt full-comparator-sequential A B FL FE FG VDD L E G
+XX1 A B VDD N003 N007 N009 full-comparator1
+XX2 FL FL VDD N014 nand
+XX3 FG FG VDD N017 nand
+XX4 N014 FE VDD N015 nand
+XX5 FE N017 VDD N016 nand
+XX6 N015 N016 VDD N006 nand
+XX7 N003 N006 VDD N005 nand
+XX8 N007 N006 VDD N008 nand
+XX9 N009 N006 VDD N010 nand
+XX10 FL FL VDD N004 nand
+XX11 N001 N001 VDD N002 nand
+XX12 N002 N004 VDD L nand
+XX13 FG FG VDD N013 nand
+XX14 N011 N011 VDD N012 nand
+XX15 N012 N013 VDD G nand
+XX16 N005 N005 VDD N001 nand
+XX17 N008 N008 VDD E nand
+XX18 N010 N010 VDD N011 nand
+.ends full-comparator-sequential
+
+.subckt full-comparator1 A B VDD L E G
+XX1 B B VDD N005 nand
+XX2 A A VDD N002 nand
+XX3 A N005 VDD N004 nand
+XX4 N002 B VDD N001 nand
+XX5 N001 N004 VDD N003 nand
+XX6 N001 N001 VDD L nand
+XX7 N004 N004 VDD G nand
+XX8 N003 N003 VDD E nand
+.ends full-comparator1
+
+.subckt nand A B VDD Y
+M1 VDD A Y VDD PMOS l=90n w=400n
+M2 VDD B Y VDD PMOS l=90n w=400n
+M3 Y A N001 0 NMOS l=90n w=200n
+M4 N001 B 0 0 NMOS l=90n w=200n
+.ends nand
+
+.model NMOS NMOS
+.model PMOS PMOS
+.lib C:\Users\aleksejlapin\AppData\Local\LTspice\lib\cmp\standard.mos
+.tran 0 2048n 0 32p
+.include 90nm_bulk.txt
+.backanno
+.end
