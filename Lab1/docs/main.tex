@@ -20,6 +20,22 @@
   bottom=20mm, 
   left=25mm
 }
+\lstdefinestyle{verilog}{ 
+  basicstyle=\small\ttfamily,
+  commentstyle=\color{cyan},
+  stringstyle=\color{magenta}\ttfamily,
+  keywordstyle=\color{blue},
+  numbers=left,
+  numberstyle=\scriptsize,
+  numbersep=5pt,
+  frame=single,
+  breaklines=true,
+  breakatwhitespace=true,
+  showstringspaces=false,
+  tabsize=4,
+  inputencoding=utf8,
+  extendedchars=true
+}
 
 \begin{document}
 \setcounter{tocdepth}{4}
@@ -68,7 +84,7 @@
 \section{Задание}
 Лабораторная работа состоит из двух частей.
 
-Первая часть посвящена проектированию цифровых вентилей на полевых транзисторах, построению схем на базе вентилей и знакомству с технологией SPICEмоделирования. Первая часть работы выполняется в программном пакете LTspice. При построении схем вентилей необходимо использовать КМОП-транзисторы с параметрами из файла, предоставленного преподавателем (см. раздел «Основы работы в среде LTspice»).
+Первая часть посвящена проектированию цифровых вентилей на полевых транзисторах, построению схем на базе вентилей и знакомству с технологией SPICE моделирования. Первая часть работы выполняется в программном пакете LTspice. При построении схем вентилей необходимо использовать КМОП-транзисторы с параметрами из файла, предоставленного преподавателем (см. раздел «Основы работы в среде LTspice»).
 
 Вторая часть посвящена знакомству с языком описания аппаратуры Verilog HDL, изучению особенностей его использования для описания схем на вентильном уровне и приобретению навыков тестирования таких схем. Вторая часть работы выполняется с использованием Vivado Simulator, входящего в пакет Vivado Design Suite (см. раздел «Основы работы в среде Vivado Design Suite»).
 
@@ -180,7 +196,27 @@ $$
 Будем делать последовательный компаратор, поэтому добавим входы наращивания разрядности.
 $$A\wedge B = (A \mid B) \mid (A \mid B)$$
 $$A \vee B = (A \mid A) \mid (B \mid B)$$
-\begin{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{image/and.png}
+    \caption{Схема and}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.2\textwidth]{image/and-sym.png}
+    \caption{Символ and}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{image/and3.png}
+    \caption{Схема and3}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.2\textwidth]{image/and3-sym.png}
+    \caption{Символ and3}
+\end{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{image/full-comparator-seq.png}
     \caption{Схема полного компаратора с двумя одноразрядными входами и входами наращивания разрядности}
@@ -198,11 +234,6 @@ $$A \vee B = (A \mid A) \mid (B \mid B)$$
     \includegraphics[width=\textwidth]{image/full-comparator.png}
     \caption{Схема полного четырехразрядного компаратора}
 \end{figure}
-\begin{figure}{H}
-    \centering
-    \includegraphics[width=\textwidth]{image/full-comparator4-all-in-one.png}
-    \caption{Тоже самое, но без вспомагательных символов. Слабонервным не смотреть) }
-\end{figure}
 \subsection{Создайте символ для построенного БОЭ.}
 \begin{figure}[H]
     \centering
@@ -218,7 +249,7 @@ $$A \vee B = (A \mid A) \mid (B \mid B)$$
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{image/full-comparator-test-all-states.png}
-    \caption{Все возможные состояния. Ничего не понятно, но очень интересно}
+    \caption{Все возможные состояния.}
 \end{figure}
 \begin{figure}[H]
     \centering
@@ -306,4 +337,335 @@ $$ \nu_{\max} = \frac{1}{\max(t)}= \frac{1}{1.034} = 0.967\text{ГГц}$$
 
 \section{Отчет о выполнении заданий части 2:}
 \subsection{Код разработанного модуля БОЭ}
+\begin{lstlisting}[style=verilog, language=Verilog]
+`timescale 1ns / 1ps
+
+module full_comparator(
+    input wire a, b,
+    output wire l, e, g
+    );
+wire not_a, not_b;
+wire v1_1, v1_2, v2_1;
+
+nand(not_a, a, a);
+nand(not_b, b, b);
+nand(v1_1, not_a, b);
+nand(v1_2, not_b, a);
+
+nand(l, v1_1, v1_1);
+
+nand(v2_1, v1_1, v1_2);
+nand(e, v2_1, v2_1);
+
+nand(g, v1_2, v1_2);
+
+endmodule
+
+module and2(
+    input wire a, b,
+    output wire out
+    );
+wire ab;
+nand(ab, a, b);
+nand(out, ab, ab);
+
+endmodule
+
+module and3(
+    input wire a, b, c,
+    output wire out
+    );
+
+wire ab, not_ab, abc;
+nand(ab, a, b);
+nand(not_ab, ab, ab);
+nand(abc, not_ab, c);
+nand(out, abc, abc);
+endmodule
+
+module or2(
+    input wire a, b,
+    output wire out
+    );
+wire not_a, not_b;
+nand(not_a, a, a);
+nand(not_b, b, b);
+
+nand(out, not_a, not_b);
+endmodule
+
+module full_comparator_seq(
+    input wire a, b, fl, fe, fg,
+    output wire l, e, g
+);
+
+wire not_fl, not_fg, fc_l, fc_e, fc_g, add3_out, andl_out, andg_out;
+nand(not_fl, fl, fl);
+nand(not_fg, fg, fg);
+
+full_comparator fc_i(.a(a), .b(b), .l(fc_l), .e(fc_e), .g(fc_g));
+and3 and3_i(.a(not_fl), .b(fe), .c(not_fg), .out(add3_out));
+
+and2 and2_i1(.a(fc_l), .b(add3_out), .out(andl_out));
+and2 and2_i2(.a(fc_e), .b(add3_out), .out(e));
+and2 and2_i3(.a(fc_g), .b(add3_out), .out(andg_out));
+
+or2 or_i1(.a(andl_out), .b(fl), .out(l));
+or2 or_i2(.a(andg_out), .b(fg), .out(g));
+
+endmodule
+
+
+
+module full_comparator4(
+    input wire[0:3] a,
+    input wire[0:3] b,
+    input fl, fe, fg,
+    output l, e, g
+    );
+wire[2:0] fcsl_out, fcse_out, fcsg_out;
+full_comparator_seq fcs1(a[0],b[0],fl,fe,fg,fcsl_out[0],fcse_out[0],fcsg_out[0]);
+full_comparator_seq fcs2(a[1],b[1],fcsl_out[0],fcse_out[0],fcsg_out[0], fcsl_out[1],fcse_out[1],fcsg_out[1]);
+full_comparator_seq fcs3(a[2],b[2],fcsl_out[1],fcse_out[1],fcsg_out[1], fcsl_out[2],fcse_out[2],fcsg_out[2]);
+full_comparator_seq fcs4(a[3],b[3],fcsl_out[2],fcse_out[2],fcsg_out[2],l,e,g);    
+endmodule
+
+\end{lstlisting}
+
+\subsection{Код разработанного тестового окружения}
+\begin{lstlisting}[style=verilog, language=Verilog]
+`timescale 1ns / 1ps //reference time / precision
+
+
+module full_comparator4_tb;
+//inputs
+reg[3:0] a, b;
+reg fl, fe, fg;
+//outputs
+wire l;
+wire e;
+wire g;
+
+// Unit under test (UUT)
+
+full_comparator4 uut(a, b, fl, fe, fg, l, e, g);
+
+//32 bit integer
+integer i, j;
+
+reg[3:0] expr_lt, expr_eq, expr_gt;
+
+initial
+begin
+{fl, fe, fg} = 3'b010;
+    for (i = 0; i < 16; i = i + 1) begin
+        a = i;
+        for (j = 0; j < 16; j = j + 1) begin
+            b = j;
+            expr_lt = ( i < j );
+            expr_eq = ( i == j );
+            expr_gt = ( i > j );
+            #10;
+            if (l == expr_lt & e == expr_eq & g == expr_gt) begin
+                $display("[CORRECT]: a = %d, b = %d, l = %d, e = %d, g = %d", a, b, l, e, g);
+            end else begin
+                 $display("[INCORRECT]: a=%d, b=%d, expr_lt=%d, expr_eq=%d, expr_gt=%d, l=%d, e=%d, g=%d",
+                 a, b, expr_lt, expr_eq, expr_gt, l, e, g);
+            end
+        end
+    end
+$stop;
+end
+
+
+endmodule
+
+\end{lstlisting}
+
+\subsection{Временная диаграмма процесса тестирования БОЭ}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/verilog-diagram.png}
+    \caption{Отрывок временная диаграммы процесса тестирования БОЭ}
+\end{figure}
+
+Логи
+
+\begin{lstlisting}[style=verilog, language=Verilog]
+[CORRECT]: a =  6, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a =  6, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a =  6, b =  6, l = 0, e = 1, g = 0
+[CORRECT]: a =  6, b =  7, l = 1, e = 0, g = 0
+[CORRECT]: a =  6, b =  8, l = 1, e = 0, g = 0
+[CORRECT]: a =  6, b =  9, l = 1, e = 0, g = 0
+[CORRECT]: a =  6, b = 10, l = 1, e = 0, g = 0
+[CORRECT]: a =  6, b = 11, l = 1, e = 0, g = 0
+[CORRECT]: a =  6, b = 12, l = 1, e = 0, g = 0
+[CORRECT]: a =  6, b = 13, l = 1, e = 0, g = 0
+[CORRECT]: a =  6, b = 14, l = 1, e = 0, g = 0
+[CORRECT]: a =  6, b = 15, l = 1, e = 0, g = 0
+[CORRECT]: a =  7, b =  0, l = 0, e = 0, g = 1
+[CORRECT]: a =  7, b =  1, l = 0, e = 0, g = 1
+[CORRECT]: a =  7, b =  2, l = 0, e = 0, g = 1
+[CORRECT]: a =  7, b =  3, l = 0, e = 0, g = 1
+[CORRECT]: a =  7, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a =  7, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a =  7, b =  6, l = 0, e = 0, g = 1
+[CORRECT]: a =  7, b =  7, l = 0, e = 1, g = 0
+[CORRECT]: a =  7, b =  8, l = 1, e = 0, g = 0
+[CORRECT]: a =  7, b =  9, l = 1, e = 0, g = 0
+[CORRECT]: a =  7, b = 10, l = 1, e = 0, g = 0
+[CORRECT]: a =  7, b = 11, l = 1, e = 0, g = 0
+[CORRECT]: a =  7, b = 12, l = 1, e = 0, g = 0
+[CORRECT]: a =  7, b = 13, l = 1, e = 0, g = 0
+[CORRECT]: a =  7, b = 14, l = 1, e = 0, g = 0
+[CORRECT]: a =  7, b = 15, l = 1, e = 0, g = 0
+[CORRECT]: a =  8, b =  0, l = 0, e = 0, g = 1
+[CORRECT]: a =  8, b =  1, l = 0, e = 0, g = 1
+[CORRECT]: a =  8, b =  2, l = 0, e = 0, g = 1
+[CORRECT]: a =  8, b =  3, l = 0, e = 0, g = 1
+[CORRECT]: a =  8, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a =  8, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a =  8, b =  6, l = 0, e = 0, g = 1
+[CORRECT]: a =  8, b =  7, l = 0, e = 0, g = 1
+[CORRECT]: a =  8, b =  8, l = 0, e = 1, g = 0
+[CORRECT]: a =  8, b =  9, l = 1, e = 0, g = 0
+[CORRECT]: a =  8, b = 10, l = 1, e = 0, g = 0
+[CORRECT]: a =  8, b = 11, l = 1, e = 0, g = 0
+[CORRECT]: a =  8, b = 12, l = 1, e = 0, g = 0
+[CORRECT]: a =  8, b = 13, l = 1, e = 0, g = 0
+[CORRECT]: a =  8, b = 14, l = 1, e = 0, g = 0
+[CORRECT]: a =  8, b = 15, l = 1, e = 0, g = 0
+[CORRECT]: a =  9, b =  0, l = 0, e = 0, g = 1
+[CORRECT]: a =  9, b =  1, l = 0, e = 0, g = 1
+[CORRECT]: a =  9, b =  2, l = 0, e = 0, g = 1
+[CORRECT]: a =  9, b =  3, l = 0, e = 0, g = 1
+[CORRECT]: a =  9, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a =  9, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a =  9, b =  6, l = 0, e = 0, g = 1
+[CORRECT]: a =  9, b =  7, l = 0, e = 0, g = 1
+[CORRECT]: a =  9, b =  8, l = 0, e = 0, g = 1
+[CORRECT]: a =  9, b =  9, l = 0, e = 1, g = 0
+[CORRECT]: a =  9, b = 10, l = 1, e = 0, g = 0
+[CORRECT]: a =  9, b = 11, l = 1, e = 0, g = 0
+[CORRECT]: a =  9, b = 12, l = 1, e = 0, g = 0
+[CORRECT]: a =  9, b = 13, l = 1, e = 0, g = 0
+[CORRECT]: a =  9, b = 14, l = 1, e = 0, g = 0
+[CORRECT]: a =  9, b = 15, l = 1, e = 0, g = 0
+[CORRECT]: a = 10, b =  0, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b =  1, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b =  2, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b =  3, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b =  6, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b =  7, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b =  8, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b =  9, l = 0, e = 0, g = 1
+[CORRECT]: a = 10, b = 10, l = 0, e = 1, g = 0
+[CORRECT]: a = 10, b = 11, l = 1, e = 0, g = 0
+[CORRECT]: a = 10, b = 12, l = 1, e = 0, g = 0
+[CORRECT]: a = 10, b = 13, l = 1, e = 0, g = 0
+[CORRECT]: a = 10, b = 14, l = 1, e = 0, g = 0
+[CORRECT]: a = 10, b = 15, l = 1, e = 0, g = 0
+[CORRECT]: a = 11, b =  0, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b =  1, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b =  2, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b =  3, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b =  6, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b =  7, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b =  8, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b =  9, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b = 10, l = 0, e = 0, g = 1
+[CORRECT]: a = 11, b = 11, l = 0, e = 1, g = 0
+[CORRECT]: a = 11, b = 12, l = 1, e = 0, g = 0
+[CORRECT]: a = 11, b = 13, l = 1, e = 0, g = 0
+[CORRECT]: a = 11, b = 14, l = 1, e = 0, g = 0
+[CORRECT]: a = 11, b = 15, l = 1, e = 0, g = 0
+[CORRECT]: a = 12, b =  0, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b =  1, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b =  2, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b =  3, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b =  6, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b =  7, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b =  8, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b =  9, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b = 10, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b = 11, l = 0, e = 0, g = 1
+[CORRECT]: a = 12, b = 12, l = 0, e = 1, g = 0
+[CORRECT]: a = 12, b = 13, l = 1, e = 0, g = 0
+[CORRECT]: a = 12, b = 14, l = 1, e = 0, g = 0
+[CORRECT]: a = 12, b = 15, l = 1, e = 0, g = 0
+[CORRECT]: a = 13, b =  0, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b =  1, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b =  2, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b =  3, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b =  6, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b =  7, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b =  8, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b =  9, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b = 10, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b = 11, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b = 12, l = 0, e = 0, g = 1
+[CORRECT]: a = 13, b = 13, l = 0, e = 1, g = 0
+[CORRECT]: a = 13, b = 14, l = 1, e = 0, g = 0
+[CORRECT]: a = 13, b = 15, l = 1, e = 0, g = 0
+[CORRECT]: a = 14, b =  0, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b =  1, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b =  2, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b =  3, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b =  6, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b =  7, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b =  8, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b =  9, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b = 10, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b = 11, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b = 12, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b = 13, l = 0, e = 0, g = 1
+[CORRECT]: a = 14, b = 14, l = 0, e = 1, g = 0
+[CORRECT]: a = 14, b = 15, l = 1, e = 0, g = 0
+[CORRECT]: a = 15, b =  0, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b =  1, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b =  2, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b =  3, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b =  4, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b =  5, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b =  6, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b =  7, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b =  8, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b =  9, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b = 10, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b = 11, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b = 12, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b = 13, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b = 14, l = 0, e = 0, g = 1
+[CORRECT]: a = 15, b = 15, l = 0, e = 1, g = 0
+\end{lstlisting}
+
+\section{Выводы}
+\subsection{LTspice}
+
+В ходе выполнения первой части лабораторной работы я получил фундаментальные знания о принципах построения цифровых интегральных схем с использованием КМОП-технологии.
+Это фундаментальное понимание включает в себя построение и реализацию логических функций с помощью КМОП-транзисторов, которые являются основными элементами современных цифровых интегральных схем.
+Кроме того, я познакомился с технологией SPICE-моделирования и симуляции, благодаря практическому использованию программы LTspice. 
+
+Входе лабораторной работы я построил и проанализировал схему полного компаратора, а также провел симуляцию и анализ временных диаграмм.
+Научился высчитывать задержку распространения сигнала и максимальную частоту работы схемы.
+Это позволило мне понять какие ограничения на частоту работы схемы существуют. 
+Также я увидел сложность проектирования цифровых интегральных схем, и то зачем нужны средства автоматизации электронного проектирования, такие как LTspice и Vivado.
+\section{Vivado}
+
+В ходе выполнения второй части лабораторной работы были получены навыки разработки цифровых интегральных схем на языке описания аппаратуры Verilog HDL.
+Также я познакомился с программным обеспечением Vivado, которое позволяет проектировать цифровые интегральные схемы, а также проводить их симуляцию и тестирование.
+В ходе выполнения лабораторной работы я разработал модуль БОЭ и тестовое окружение для него, а также провел тестирование разработанного модуля.
+Таким образом, я получил навыки разработки цифровых интегральных схем на языке описания аппаратуры Verilog HDL, а также навыки работы с программным обеспечением Vivado.
+
 \end{document}
