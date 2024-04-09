@@ -1,0 +1,9 @@
+*.xpr
+*.jou
+.Xil
+*.cache
+*.hw
+*.ip_user_files
+*.sim
+*.xpr
+

@@ -139,32 +139,49 @@ $$
     t_{pd} = t_2 - t_1 = 9.510 - 9.005 = 0.505 \text{нс} - \text{задержка распространения сигнала для 1-0 на выходе}
 $$
 \subsection{Максимальная частота работы вентиля}
-Высчитывается как время спада(фронта) от 0.1 до 0.9 (0.9 до 0.1) уровня на выходе вентиля, и от этого времени высчитывается частота:
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{image/frequency10.png}
-    \caption{Время спада от 0.9 до 0.1}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{image/frequency01.png}
-    \caption{Время фронта от 0.1 до 0.9}
-\end{figure}
 $$
-    t_{10} = 9.098 - 10.130 = 1.031 \text{нс} - \text{для спада}
-$$
-$$t_{01} = 4.086 - 3.089 = 0.996 \text{нс} - \text{для фронта}$$
-Тогда частота спада/фронта:
-$$
-    \nu_{\text{спада}} = \frac{1}{t_{10}} = \frac{1}{1.031} = 0.970 \text{ГГц}
+    \nu_{\text{спада}} = \frac{1}{t_{10}} = \frac{1}{0.411} = 2.267 \text{ГГц}
 $$
 $$
-    \nu_{\text{фронта}} = \frac{1}{t_{01}} = \frac{1}{0.996} = 1.004 \text{ГГц}
+    \nu_{\text{фронта}} = \frac{1}{t_{01}} = \frac{1}{0.505} = 1.980 \text{ГГц}
 $$
 Тогда максимальная частота работы вентиля:
 $$
-\nu_{\max} = \min(\nu_{\text{спада}}, \nu_{\text{фронта}}) = \min(0.970, 1.004) = 0.970 \text{ГГц}
+\nu_{\max} = \min(\nu_{\text{спада}}, \nu_{\text{фронта}}) = \min(2.267, 1.980 ) = 2.267 \text{ГГц}
 $$
+Видим, что это на это влияют конденсатор и резистор. Если начем изменять значения резистора, то мы заметим, что чем меньше его емкость, тем меньше задержка.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/schema-1.png}
+    \caption{Берем кондексатор равный 0 фемптофаррад }
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/fall.png}
+    \caption{Подсчет задержки распространения сигнала для 0-1 на выходе}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/rise.png}
+    \caption{Подсчет задержки распространения сигнала для 1-0 на выходе}
+\end{figure}
+$$
+    t_{pd} = t_2 - t_1 = 9 \text{ps} - \text{задержка распространения сигнала для 0-1 на выходе}
+$$
+$$
+    t_{pd} = t_2 - t_1 = 12 \text{ps} - \text{задержка распространения сигнала для 1-0 на выходе}
+$$
+$$
+    \nu_{\text{спада}} = \frac{1}{t_{10}} = \frac{1}{9} = 110 \text{ГГц}
+$$
+$$
+    \nu_{\text{фронта}} = \frac{1}{t_{01}} = \frac{1}{12} = 83\text{ГГц}
+$$
+Тогда максимальная частота работы вентиля:
+$$
+\nu_{\max} = \min(\nu_{\text{спада}}, \nu_{\text{фронта}}) = \min(110, 83 ) = 83 \text{ГГц}
+$$
+
 \subsection{Постройте БОЭ на базе созданного вентиля согласно варианту задания.}
 Полный четырех разрядный компаратор.
 $$
@@ -295,45 +312,28 @@ $$t_{\text{pd}} = 13.736 - 13.005 = 0.731 ns$$
 \end{figure}
 $$t_{\text{pd}} = 73.827 - 73.005 = 0.822 ns$$
 \subsection{Максимальная частота работы БОЭ.}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{image/full-cmp-eq-freq-01.png}
-    \caption{Время фронта от 0.9 до 0.1 для equal}
-\end{figure}
-$$ t_{\text{фронта}_{\text{eq}}}=97.718 - 97.241 = 0.477 ns$$
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{image/full-cmp-eq-freq-10.png}
-    \caption{Время спада от 0.1 до 0.9 для equal}
-\end{figure}
-$$ t_{\text{спада}_{\text{eq}}}=100.599 - 99.565 = 1.034 ns$$
-\begin{figure}{H}
-    \centering
-    \includegraphics[width=\textwidth]{image/full-cmp-gt-freq-01.png}
-    \caption{Время фронта от 0.9 до 0.1 для greater}
-\end{figure}
-$$ t_{\text{фронта}_{\text{gt}}}=102.396 - 101.68 = 0.716 ns$$
-\begin{figure}{H}
-    \centering
-    \includegraphics[width=\textwidth]{image/full-cmp-gt-freq-10.png}
-    \caption{Время спада от 0.1 до 0.9 для greater}
-\end{figure}
-$$ t_{\text{спада}_{\text{gt}}}=98.286 - 97.44 = 0.846 ns$$
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{image/full-cmp-lt-freq-01.png}
-    \caption{Время фронта от 0.9 до 0.1 для less}
-\end{figure}
-$$ t_{\text{фронта}_{\text{lt}}}=100.398 - 99.58 = 0.818 ns$$
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{image/full-cmp-lt-freq-10.png}
-    \caption{Время спада от 0.1 до 0.9 для less}
-\end{figure}
-$$ t_{\text{спада}_{\text{lt}}}=102.382 - 101.348 = 1.034 ns$$
 
 Тогда максимальная частота схемы:
-$$ \nu_{\max} = \frac{1}{\max(t)}= \frac{1}{1.034} = 0.967\text{ГГц}$$
+$$ \nu_{\max} = \frac{1}{\max(t)}= \frac{1}{0.963} = 1.038\text{ГГц}$$
+
+
+Поступим также как для NAND возьмем конденсатор с емкостью 0 фаррад.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/rise-2.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/fall-2.png}
+\end{figure}
+$$t_{\text{rise}} = 246 ps$$
+
+$$t_{\text{fall}} = 456.89 ps$$
+
+Эти значения близки к теоритическим: Количество NAND $\cdot$ Задержка одного = $9 \cdot 4 \cdot 8 = 288 ps $ для  rise
+$9 \cdot 4 \cdot 12 = 432 ps $ для  fall
+Тогда максимальная частота схемы:
+$$ \nu_{\max} = \frac{1}{\max(t)}= \frac{1}{0.432} = 2.31\text{ГГц}$$
 
 \section{Отчет о выполнении заданий части 2:}
 \subsection{Код разработанного модуля БОЭ}
@@ -661,7 +661,7 @@ endmodule
 Научился высчитывать задержку распространения сигнала и максимальную частоту работы схемы.
 Это позволило мне понять какие ограничения на частоту работы схемы существуют. 
 Также я увидел сложность проектирования цифровых интегральных схем, и то зачем нужны средства автоматизации электронного проектирования, такие как LTspice и Vivado.
-\section{Vivado}
+\subsection{Vivado}
 
 В ходе выполнения второй части лабораторной работы были получены навыки разработки цифровых интегральных схем на языке описания аппаратуры Verilog HDL.
 Также я познакомился с программным обеспечением Vivado, которое позволяет проектировать цифровые интегральные схемы, а также проводить их симуляцию и тестирование.
