@@ -103,6 +103,11 @@
   \includegraphics[width=\textwidth]{image/counter.png}
   \caption{Синхронный счетчик по переднему фронту с асинхронным сбросом и сигналом разрешения, 32 разряда.}
 \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/counter-d.png}
+    \caption{Синхронный счетчик по переднему фронту с асинхронным сбросом и сигналом разрешения, 32 разряда.}
+\end{figure}
 
 Счетчик тактируется от CLK по переднему фронту. Когда уровень enable высокий,
 то счетчик инкрементируется, когда уровень низкий — счетчик сохраняет свое
@@ -112,7 +117,7 @@
 
 На выходе счетчика по переднему фронту выставляется значение $Q(t-1) + 1$ по модулю разрядности счетчика.
 \subsubsection{Разработанный модуль}
-\lstinputlisting[style=verilog, language=verilog]{src/counter/src/counter.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/counter/src/counter.v}
 \subsubsection{Тестовый план:}
 Области эквивалентности:
 \begin{itemize}
@@ -120,7 +125,7 @@
   \item enable = 1, rst\_n = 0 -- сброс
   \item enable = 0, rst\_n = 1 -- сохранение значения
 \end{itemize}
-\lstinputlisting[style=verilog, language=verilog]{src/counter/src/counter_tb.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/counter/src/counter_tb.v}
 \textbf{Результаты тестирования:}
 
 \begin{lstlisting}[language=verilog]
@@ -139,12 +144,17 @@
   \includegraphics[width=\textwidth]{image/shift-right.png}
   \caption{Схема сдвигового регистра с параллельной загрузкой и последовательным сдвигом вправо}
 \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/right-shift-reg.png}
+    \caption{Схема сдвигового регистра с параллельной загрузкой и последовательным сдвигом вправо}
+  \end{figure}
 Сдвиговый регистр с параллельной загрузкой и последовательным сдвигом вправо.
 Каждый фронт тактового сигнала, при наличии активного сигнала разрешения, выполняется операция сдвига вправо.
 При наличии активного сигнала загрузки, в регистр загружается значение с входа D.
 По заднему фронту сигнала сброса, регистр сбрасывается в 0.
 \subsubsection{Разработанный модуль}
-\lstinputlisting[style=verilog, language=verilog]{src/shift_right/src/shift_right.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/shift_right/src/shift_right.v}
 \subsubsection{Тестовый план:}
 \begin{enumerate}
   \item Протестировать сдвиг при пустом буффере.
@@ -157,7 +167,7 @@
   \includegraphics[width=\textwidth]{image/shift-right-diagram.png}
   \caption{Временная диаграмма работы сдвигового регистра}
 \end{figure}
-\lstinputlisting[style=verilog, language=verilog]{src/shift_right/src/shift_right_tb.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/shift_right/src/shift_right_tb.v}
 \textbf{Результаты тестирования:}
 \begin{lstlisting}[language=verilog]
 #################### Starting simulation ####################
@@ -169,10 +179,11 @@
 \end{lstlisting}
  
 \subsection{Конечный автомат}
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{image/fsm.png}
-  \caption{Схема конечного автомата}
+
+Схема конечного автомата
+
+\begin{figure}
+    \includegraphics[]{image/fsm-schema.pdf}
 \end{figure}
 
 Конечный автомат состоит из 7 состояний, которые соответвуют последовательным этапам вычисления функции $(A/2+B)*8 + (A-B/2)*4$.
@@ -180,15 +191,15 @@
 Когда автомат закончит работу он устанавливает сигнал ready в 1 и переходит в первое состояние, где ожидает сигнала сброса.
 \subsubsection{Разработанный модуль}
 \textbf{Сумматор}
-\lstinputlisting[style=verilog, language=verilog]{src/fsm/src/adder.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/fsm/src/adder.v}
 \textbf{Делитель на 2}
-\lstinputlisting[style=verilog, language=verilog]{src/fsm/src/div2.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/fsm/src/div2.v}
 \textbf{Умножитель на 8}
-\lstinputlisting[style=verilog, language=verilog]{src/fsm/src/mul2.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/fsm/src/mul2.v}
 \textbf{Вычитатель}
-\lstinputlisting[style=verilog, language=verilog]{src/fsm/src/sub.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/fsm/src/sub.v}
 \textbf{Конечный автомат}
-\lstinputlisting[style=verilog, language=verilog]{src/fsm/src/fsm.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/fsm/src/fsm.v}
 \subsubsection{Тестовый план:}
 \begin{enumerate}
   \item Протестировать правильность вычисления функции на любых валидных входных данных.
@@ -197,7 +208,7 @@
   \item Протестировать значения 0 входных аргументов. $a = 0 and b = 0$
   \item Протестировать минимальные значения входных аргументов. $a = -2^{31}~ and~ b = -2^{31}$
 \end{enumerate}
-\lstinputlisting[style=verilog, language=verilog]{src/fsm/src/fsm_tb.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/fsm/src/fsm_tb.v}
 \textbf{Результаты тестирования:}
 \begin{lstlisting}[language=verilog]
 [T=0] Test 1: a = 6, b = 4
@@ -221,12 +232,17 @@
   \includegraphics[width=\textwidth]{image/freq-div.png}
   \caption{Схема делителя частоты, уменьшает частоту на 10 раз}
 \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/frequency-div.png}
+    \caption{Схема делителя частоты, уменьшает частоту на 10 раз}
+  \end{figure}
 
 При подаче асинхронного сигнала сброса rst d-триггер сбрасывается.
 С каждым тактом инкрементируется значение регистра cnt\_reg до тех пор, пока cnt не станет равным значению DIV\_CNT-1. 
 Тогда значение регистра clk\_out становиться равным 1 и обнуляется значение cnt.
 \subsubsection{Разработанный модуль}
-\lstinputlisting[style=verilog, language=verilog]{src/freq_div/src/freq_div.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/freq_div/src/freq_div.v}
 \subsubsection{Тестовый план:}
 \begin{enumerate}
   \item Протестировать правильное деление частоты на 10.
@@ -234,7 +250,7 @@
   \item Протестировать сигнал разрешения.
   \item Протестировать продолжение работы после сброса.
 \end{enumerate}
-\lstinputlisting[style=verilog, language=verilog]{src/freq_div/src/freq_div_tb.v}
+\lstinputlisting[style=verilog, language=verilog]{../src/freq_div/src/freq_div_tb.v}
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{image/freq-div-diagram.png}
@@ -279,6 +295,27 @@ Test 3: Underflow condition
 Test 4: PUSH and POP on the same clock cycle
 [T=675] All tests passed
 \end{lstlisting}
+
+
+\section{Вывод}
+В ходе выполнения лабораторной работы были разработаны и протестированы следующие устройства:
+\begin{itemize}
+  \item Счетчик с асинхронным сбросом и сигналом разрешения.
+  \item Сдвиговый регистр с параллельной загрузкой и последовательным сдвигом вправо.
+  \item Конечный автомат, вычисляющий функцию $(A/2+B)*8 + (A-B/2)*4$.
+  \item Делитель частоты, уменьшающий частоту на 10 раз.
+  \item Устройство COUNT\_FREE, считающее количество единиц во входном потоке.
+  \item FIFO, реализующая очередь с фиксированным размером.
+\end{itemize}
+Вопрос: На что влияет не учитывание всех учитывать всех
+возможных комбинации входных данных?
+
+Ответ:
+
+    В комбинационной логике это ни на что не влияет. 
+
+
+
 
 
 
