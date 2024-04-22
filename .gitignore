@@ -19,6 +19,6 @@ Thumbs.db
 # Other #
 #########
 .idea
-
+build
 *.log
 *.raw

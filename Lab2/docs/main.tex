@@ -182,13 +182,71 @@
 
 Схема конечного автомата
 
-\begin{figure}
+\begin{figure}[H]
     \includegraphics[]{image/fsm-schema.pdf}
 \end{figure}
 
-Конечный автомат состоит из 7 состояний, которые соответвуют последовательным этапам вычисления функции $(A/2+B)*8 + (A-B/2)*4$.
-Чтобы автомат перешел в начальное состояние, необходимо подать сигнал сброса rst.
-Когда автомат закончит работу он устанавливает сигнал ready в 1 и переходит в первое состояние, где ожидает сигнала сброса.
+Конечный автомат состоит из 6 состояний, которые соответвуют последовательным этапам вычисления функции $(A/2+B)*8 + (A-B/2)*4$.
+
+Входные данные:
+\begin{itemize}
+    \item clk: тактовый сигнал
+    \item a, b: входные данные шириной WIDTH бит
+    \item rst\_n: асинхронный сигнал сброса
+\end{itemize}
+Работа модуля:
+\begin{itemize}
+    \item Модуль fsm использует конечный автомат с шестью состояниями (S0, S1, S2, S3, S4, S5) для выполнения последовательности операций над входными данными.
+    \item В каждом состоянии выполняются определенные операции, такие как деление на 2 (div2), сложение (adder), умножение на 2 (mul2) и вычитание (sub).
+    \item Результаты промежуточных операций сохраняются в регистрах reg1 и reg2.
+    \item Переходы между состояниями происходят на каждом такте тактового сигнала clk, если сигнал ready неактивен.
+    \item {В состоянии S0:
+    \begin{itemize}
+        \item Значение a делится на 2 с помощью модуля div2, результат сохраняется в reg1.
+    \end{itemize}
+    }
+    \item { В состоянии S1:
+    \begin{itemize}
+        \item Значение b делится на 2 с помощью модуля div2, результат сохраняется в reg2.
+        \item Значение reg1 складывается с b с помощью модуля adder, результат сохраняется в reg1.
+    \end{itemize}
+    }
+    \item {
+        В состоянии S2:
+        \begin{itemize}
+            \item Значение a вычитается из reg2 с помощью модуля sub, результат сохраняется в reg2.
+            \item Значение reg1 умножается на 2 с помощью модуля mul2, результат сохраняется в reg1.
+        \end{itemize}
+    }
+    \item {
+        В состоянии S3:
+        \begin{itemize}
+            \item Значение reg1 умножается на 2 с помощью модуля mul2, результат сохраняется в reg1.
+            \item Если счетчик mul\_cnt равен 0, переход в состояние S4, иначе остаемся в S3
+        \end{itemize}
+    }
+    \item {
+        В состоянии S4:
+        \begin{itemize}
+            \item Значение reg2 умножается на 4 с помощью модуля mul2, результат сохраняется в reg2.
+            \item Если счетчик mul\_cnt равен 0, переход в состояние S5, иначе остаемся в S4.
+        \end{itemize}
+    }
+    \item {
+        В состоянии S5:
+        \begin{itemize}
+            \item Значения reg1 и reg2 складываются с помощью модуля adder, результат сохраняется в out.
+            \item Сигнал ready устанавливается в 1, указывая на готовность результата.
+        \end{itemize}
+    }
+\end{itemize}
+
+Выходные данные:
+\begin{itemize}
+    \item out: выходные данные, содержащие результат вычислений
+    \item ready: сигнал готовности результата
+\end{itemize}
+
 \subsubsection{Разработанный модуль}
 \textbf{Сумматор}
 \lstinputlisting[style=verilog, language=verilog]{../src/fsm/src/adder.v}
@@ -273,6 +331,41 @@
   \includegraphics[width=\textwidth]{image/count-free.png}
   \caption{Схема функции COUNT\_FREE}
 \end{figure}
+Задание:
+
+Необходимо после прошествия определенного количества времени сформировать однобитный сигнал запроса. Информацию о количестве тактов, после которого необходимо формировать сигнал, устройство получает по однобитному последовательностному порту запроса. Необходимые сигналы в интерфейсе вашего модуля:
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{image/task-count-free.png}
+\end{figure}
+
+Входные данные:
+\begin{itemize}
+    \item clk: тактовый сигнал
+    \item en: сигнал разрешения работы модуля
+    \item rst: сигнал сброса
+    \item start\_req\_i: запрос на начало подсчета
+    \item start\_data\_i: входные данные для подсчета
+    \item ready\_i: сигнал готовности приема результата
+\end{itemize}
+Работа модуля:
+\begin{itemize}
+    \item Модуль freq\_div делит частоту тактового сигнала clk и генерирует сигнал fd\_clk с пониженной в 10 раз частотой.
+    \item Модуль shift\_left последовательно сдвигает входные данные start\_data\_i в регистр data\_out на каждом такте fd\_clk, пока shlft\_en активен.
+    \item Модуль counter\_upd считает количество тактовых сигналов.
+    \item {Модуль count\_free управляет работой shift\_left и counter\_upd с помощью конечного автомата с тремя состояниями: WAIT, READ и COUNT.
+    \begin{itemize}
+        \item В состоянии WAIT модуль ожидает запроса start\_req\_i. Когда запрос получен, модуль переходит в состояние READ.
+        \item В состоянии READ модуль разрешает сдвиг данных в shift\_left и загружает значение в счетчик counter\_upd (сколько тактов ему надо отсчитать). Когда start\_req\_i становится неактивным, модуль переходит в состояние COUNT.
+        \item В состоянии COUNT модуль разрешает счетчику counter\_upd считать количество тактов. Когда счетчик достигает нужного значения, модуль ждет сигнала ready\_i, чтобы отправить результат и перейти обратно в состояние WAIT.
+\end{itemize}
+    }
+\end{itemize}
+Выходные данные:
+\begin{itemize}
+    \item result\_rsp\_o: результат подсчета, равный 1, когда счетчик достигает нуля, и 0 в остальных случаях.
+    \item busy\_o: сигнал занятости, указывающий, что модуль выполняет подсчет.
+\end{itemize}
 \textbf{Результаты тестирования:}
 \begin{lstlisting}[language=verilog]
   [T=0] Test 1: Reset
@@ -287,6 +380,28 @@
   \includegraphics[width=\textwidth]{image/fifo.png}
   \caption{Схема FIFO}
 \end{figure}
+Входные данные:
+\begin{itemize}
+    \item clk: тактовый сигнал
+    \item rst: сигнал сброса
+    \item din: входные данные
+    \item push: сигнал записи данных в fifo
+    \item pop: сигнал чтения данных из fifo
+\end{itemize}
+Работа модуля:
+\begin{itemize}
+    \item Модуль fifo использует два указателя: rd\_ptr (указатель чтения) и wr\_ptr (указатель записи) для отслеживания головы и хвоста буфера.
+    \item Данные хранятся в памяти mem, которая представляет собой массив регистров размером $2^{PTR\_WIDTH}$.
+    \item Когда сигнал push активен и буфер не заполнен, входные данные din записываются в память mem по адресу wr\_ptr, и указатель записи wr\_ptr увеличивается на 1.
+    \item Когда сигнал pop активен и буфер не пуст, данные из памяти mem по адресу rd\_ptr выводятся на выход dout, сигнал rd\_en устанавливается в 1, указывая на то, что данные доступны для чтения, и указатель чтения rd\_ptr увеличивается на 1.
+    \item Если оба сигнала push и pop активны одновременно, и буфер не заполнен, происходит сначала запись, потом чтение данных.
+    \item Сигналы empty и full указывают на состояние буфера: пустой (empty) или заполненный (full). Они определяются на основе значений указателей чтения и записи, а также предыдущего действи (push или pop).
+\end{itemize}
+Выходные данные:
+\begin{itemize}
+    \item dout: выходные данные 
+    \item rd\_en: сигнал, указывающий на то, что данные доступны для чтения
+\end{itemize}
 \textbf{Результаты тестирования:}
 \begin{lstlisting}[language=verilog]
 Test 1: Basic write/read
@@ -295,6 +410,7 @@ Test 3: Underflow condition
 Test 4: PUSH and POP on the same clock cycle
 [T=675] All tests passed
 \end{lstlisting}
+
 
 
 \section{Вывод}
@@ -311,8 +427,156 @@ Test 4: PUSH and POP on the same clock cycle
 возможных комбинации входных данных?
 
 Ответ:
+\begin{itemize} 
+    \item {В комбинационной возникают засчелки
+    \begin{lstlisting}[language=verilog]
+`timescale 1ns / 1ps
 
-    В комбинационной логике это ни на что не влияет. 
+module test(
+    input [1:0] sel,
+    input [7:0] a, b,
+    output reg [7:0] out
+);
+    always @(*) begin
+        case (sel)
+            2'b00: out = a;
+            2'b01: out = b;
+        endcase
+    end
+endmodule
+\end{lstlisting}
+Cинтезатор не может определить, какое значение должен принимать выход out для нерассмотренных комбинаций входов. Поэтому он может реализовать выход как latch (триггер с асинхронным установлением), который будет сохранять предыдущее значение
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/inferred_latch.png}
+    \caption{Vivado сигнализирует о возникновении засчелки}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/inferred_latch_rtl.png}
+    \caption{Засчелка}
+\end{figure}
+Избавляемся от засчелки:
+\begin{lstlisting}[language=verilog]
+`timescale 1ns / 1ps
+
+module test(
+    input [1:0] sel,
+    input [7:0] a, b,
+    output reg [7:0] out
+);
+    always @(*) begin
+        case (sel)
+            2'b00: out = a;
+            2'b01: out = b;
+            default: out = a;
+        endcase
+    end
+endmodule
+    \end{lstlisting}
+    }
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{image/inferred_latch_rtl-2.png}
+        \caption{Без засчелки}
+    \end{figure}
+
+\item{ 
+В последовательностной логике появляется дополнительный мультиплексор, если не было управления разрешением (enable)
+\begin{lstlisting}[language=verilog]
+`timescale 1ns / 1ps
+
+module test(
+    input [1:0] sel,
+    input clk,
+    input [7:0] a, b,
+    output reg [7:0] out
+);
+always @(posedge clk) begin
+    case (sel)
+        2'b00: out <= a;
+        2'b01: out <= b;
+    endcase
+end
+endmodule
+\end{lstlisting}
+}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/seq-1.png}
+    \caption{Дополнительный мультиплексор}
+\end{figure}
+\begin{lstlisting}[language=verilog]
+    `timescale 1ns / 1ps
+    
+    module test(
+        input [1:0] sel,
+        input clk,
+        input [7:0] a, b,
+        output reg [7:0] out
+    );
+    always @(posedge clk) begin
+        case (sel)
+            2'b00: out <= a;
+            2'b01: out <= b;
+            default: out <= a;
+        endcase
+    end
+    endmodule
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/seq-2.png}
+    \caption{Один мультиплексор}
+\end{figure}
+
+\end{itemize}
+
+Вопрос: 18-19 counter что будет если убрать else ,что если оставить 
+\begin{lstlisting}[language=verilog]
+    `timescale 1ns / 10ps
+
+    module counter 
+    #(
+        parameter WIDTH = 32
+    )
+    (
+        input clk,
+        input rst_n,
+        input enable,
+        output reg [WIDTH - 1:0] cnt
+    );
+        always @(posedge clk or negedge rst_n) begin
+            if(!rst_n)
+                cnt <= {WIDTH{1'b0}};
+            else if (enable)
+                cnt <= cnt + 1'b1;
+            else
+                cnt <= cnt;
+        end
+    endmodule
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image/counter-new.png}
+    \caption{RTL схема счетчика}
+\end{figure}
+
+Ничего не измениться так как и без else были описаны все возможные входные значения. 
+
+\textbf{Вопрос, задание: сократить количество FF}
+\begin{figure}[H]
+    \includegraphics[width=\textwidth]{image/was.png}
+    \caption{Было}
+\end{figure}
+\begin{figure}[H]
+    \includegraphics[width=\textwidth]{image/now.png}
+    \caption{Стало}
+\end{figure}
+
+
+
+
 
 
 

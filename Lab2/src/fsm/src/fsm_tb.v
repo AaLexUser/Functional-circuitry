@@ -2,7 +2,7 @@
 `include "fsm/src/fsm.v"
 module fsm_tb;
     localparam WIDTH = 32;
-    localparam OP_WIDTH = WIDTH + 3;
+    localparam OP_WIDTH = WIDTH + 4;
     reg clk;
     reg [WIDTH - 1:0] a, b;
     reg rst_n;
@@ -44,8 +44,8 @@ module fsm_tb;
         $dumpfile("build/fsm.vcd");
         $dumpvars(1);
 
-        $monitor("[T=%0d] state->%0d, reg1=%0d, reg2=%0d, reg3=%00d, reg4=%0d, mul_cnt=%0d, ready=%b, out=%0d", 
-            $time, fsm_dut.state, fsm_dut.reg1, fsm_dut.reg2, fsm_dut.reg3, fsm_dut.reg4, fsm_dut.mul_cnt, fsm_dut.ready, fsm_dut.out);
+        $monitor("[T=%0d] state->%0d, reg1=%0d, reg2=%0d, add_a=%0d, add_b=%0d, div2_in=%0d, mul2_in=%0d, mul_cnt=%0d, ready=%b, out=%0d", 
+            $time, fsm_dut.state,fsm_dut.reg1, fsm_dut.reg2,fsm_dut.add_a, fsm_dut.add_b, fsm_dut.div2_in, fsm_dut.mul2_in, fsm_dut.mul_cnt, fsm_dut.ready, fsm_dut.out);
 
         rst_n = 0;
         
@@ -66,8 +66,8 @@ module fsm_tb;
         $display("[T=%0g] Test 2: Reset", $time);
         @(negedge clk) begin
             rst_n <= 0;
-            a <= 32'd1234;
-            b <= 32'd5678;
+            a <= 32'd5678;
+            b <= 32'd1234;
         end
         tst_out = 0;
         @(posedge clk) check;
@@ -85,10 +85,13 @@ module fsm_tb;
         /* Test: Max values a = 2^32 - 1 and b = 2^32 - 1 */
         $display("[T=%0g] Test 3: a = 2^32 - 1, b = 2^32 - 1", $time);
         @(negedge clk) begin
-            // a = 2^31 - 1
-            a <= 32'h7FFFFFFF;
-            // b = 2^31 - 1
-            b <= 32'h7FFFFFFF;
+            rst_n <= 0;
+        end
+        @(negedge clk) begin
+            // a = 2^32 - 1
+            a <= 32'hFFFFFFFF;
+            // b = 2^32 - 1
+            b <= 32'hFFFFFFFF;
             rst_n <= 1;
         end
         while (!ready) begin
@@ -102,24 +105,6 @@ module fsm_tb;
         @(negedge clk) begin
             a <= 32'h0;
             b <= 32'h0;
-            rst_n <= 0;
-        end
-        @(negedge clk) begin
-            rst_n <= 1;
-        end
-        while (!ready) begin
-            @(posedge clk);
-        end
-        calfunc(a, b, tst_out);
-        @(posedge clk) check;
-
-        /* Test: Min values a = -2^31 and b = -2^31 */
-        $display("[T=%0g] Test 5: a = -2^31, b = -2^31", $time);
-        @(negedge clk) begin
-            // a = -2^31
-            a <= 32'h80000000;
-            // b = -2^31
-            b <= 32'h80000000;
             rst_n <= 0;
         end
         @(negedge clk) begin
