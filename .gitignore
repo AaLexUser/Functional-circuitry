@@ -22,3 +22,7 @@ Thumbs.db
 build
 *.log
 *.raw
+.$*
+*.vcd
+sim
+

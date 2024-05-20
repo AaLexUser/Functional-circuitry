@@ -1,0 +1,12 @@
+# Jupyter notebook
+
+# For text count
+# *.ipynb text
+
+# Mark as documentation for GitHub Linguist
+*.ipynb linguist-documentation
+*.tex linguist-documentation
+*.latex linguist-documentation
+
+# Auto detect text files and perform LF normalization
+* text=auto

@@ -5,7 +5,7 @@
   <lib desc="#Wiring" name="0">
     <tool name="Splitter">
       <a name="appear" val="center"/>
-      <a name="facing" val="west"/>
+      <a name="facing" val="south"/>
     </tool>
     <tool name="Pin">
       <a name="appearance" val="classic"/>
@@ -242,6 +242,7 @@
     <comp lib="2" loc="(720,520)" name="Multiplexer"/>
     <comp lib="2" loc="(790,720)" name="Multiplexer">
       <a name="select" val="3"/>
+      <a name="selloc" val="tr"/>
       <a name="width" val="35"/>
     </comp>
     <comp lib="3" loc="(490,690)" name="Shifter">
@@ -296,7 +297,7 @@
     <wire from="(390,410)" to="(390,430)"/>
     <wire from="(390,430)" to="(450,430)"/>
     <wire from="(390,560)" to="(390,640)"/>
-    <wire from="(390,560)" to="(840,560)"/>
+    <wire from="(390,560)" to="(770,560)"/>
     <wire from="(410,680)" to="(450,680)"/>
     <wire from="(440,390)" to="(450,390)"/>
     <wire from="(440,410)" to="(450,410)"/>
@@ -354,6 +355,8 @@
     <wire from="(740,740)" to="(750,740)"/>
     <wire from="(740,750)" to="(740,790)"/>
     <wire from="(740,750)" to="(750,750)"/>
+    <wire from="(770,560)" to="(770,680)"/>
+    <wire from="(770,560)" to="(840,560)"/>
     <wire from="(790,720)" to="(860,720)"/>
     <wire from="(800,460)" to="(800,470)"/>
     <wire from="(830,400)" to="(840,400)"/>
